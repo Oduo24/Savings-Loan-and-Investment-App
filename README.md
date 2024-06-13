@@ -1,4 +1,6 @@
-# TENUM
+# Project Overview
+This project is a web-based savings, loan, and investment platform designed to help users manage their finances. Built using Flask, MySQL (SQLAlchemy), Bootstrap, and other JavaScript libraries, the platform offers a user-friendly interface for saving money, applying for loans, and making investments. It has two different user roles(admin and normal user). Users can deposit savings, request loans, and track their investment performance, all through a secure and intuitive web application. The platform also includes features for managing transactions, calculating interest, and providing financial reports.
+
 ## 1. Project Structure
 1. models/ - 
 Contains the SQLAlchemy models defining the database schema for the platform. Each model represents a table in the database
@@ -15,7 +17,22 @@ Manages database connections and operations. This script sets up SQLAlchemy to i
 7. jobs.py - 
 Schedules and runs background tasks and jobs. This can include tasks such as processing transactions, sending notifications, and performing periodic maintenance activities necessary for the platform's operation.
 ## 2. Installation
-### i. Clone the repo
-### ii. Create a Virtual Environment
-### iii. Install Dependencies
-### iv. Run application
+### Clone the repo
+```
+git clone https://github.com/Oduo24/Savings-Loan-and-Investment-App
+cd Savings-Loan-and-Investment-App
+```
+### Create a Virtual Environment
+```
+python3 -m venv venv
+source venv/bin/activate
+```
+### Install Dependencies
+```
+pip install -r requirements.txt
+```
+### Run application
+```
+python3 app.py
+```
+The application will be available at http://127.0.0.1:5000.
