@@ -1,0 +1,15 @@
+# Ignore all .log files
+*.log
+
+# Ignore the node_modules directory
+node_modules/
+
+# Ignore all .env files
+*.env
+
+# Ignore virtual env
+venv/
+
+# Ignore cache files
+__pycache__
+

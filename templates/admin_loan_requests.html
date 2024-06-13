@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>Hi, {{ current_username }}!</h4>
+        </div>
+    </div>
+</div>
+<!-- row -->
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Loan Requests</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="example" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th class="d-none">ID</th>
+                                <th>Date</th>
+                                <th>Member</th>
+                                <th>Doc.</th>
+                                <th>Principal</th>
+                                <th>Approval</th>
+                                <th>Status</th>
+                                <th>Deadline</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for loan_request in loan_requests %}
+                                <tr>
+                                    <td class="d-none" id="loan_request_id">{{ loan_request.id }}</td>
+                                    <td>{{ loan_request.created_at.strftime('%d/%m/%Y') }}</td>
+                                    <td id="loanee">{{ loan_request.request_from_user }}</td>
+                                    <td>{{ loan_request.loan_no }}</td>
+                                    <td id="loan_amount">{{ loan_request.request_amount }}</td>
+                                    <td>{{ loan_request.approval_status }}</td>
+                                    <td>{{ loan_request.loan_status }}</td>
+                                    <td>{{ loan_request.repayment_date }}</td>
+                                    <td>{{ loan_request.repayment_amount }}</td>
+                                    <td>
+                                        {% if role == 'admin' %}
+                                            {% if loan_request.approval_status == 'disbursed' %}
+                                                <button class="btn btn-success btn-sm approveBtn" type="button" loan_id="{{ loan_request.id }}" data-bs-toggle="offcanvas" data-bs-target="#confirmLoanApproval" aria-controls="offcanvasWithBothOptions" btn_type="admin_count" disabled>
+                                                    Disbursed
+                                                </button>
+                                            {% elif loan_request.approval_count < 3 %}
+                                                <button class="btn btn-success btn-sm approveBtn" type="button" loan_id="{{ loan_request.id }}" data-bs-toggle="offcanvas" data-bs-target="#confirmLoanApproval" aria-controls="#confirmLoanApproval" btn_type="admin_disbursed" disabled>
+                                                    {{ loan_request.approval_count }}
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-primary btn-sm approveBtn" type="button" loan_id="{{ loan_request.id }}" data-toggle="modal" data-target="#exampleModalCenter" btn_type="admin_disburse">
+                                                    Disburse
+                                                </button>
+                                            {% endif %}
+                                        {% endif %}
+                                        
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class="d-none">ID</th>
+                                <th>Date</th>
+                                <th>Member</th>
+                                <th>Doc.</th>
+                                <th>Principal</th>
+                                <th>Approval</th>
+                                <th>Status</th>
+                                <th>Deadline</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<div class="modal fade" id="exampleModalCenter">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New Loan Disbursement</h5>
+                <button type="button" class="close" data-dismiss="modal" id="modal_close"><span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="" id="">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" id="csrf_token">
+                    <div class="input-group mb-3">
+                        <input class="form-control" id="paying_to" placeholder="Ledger" required>
+                        <span class="input-group-text">Party Account(cr)</span>
+                        <input class="form-control" id="paying_from" required>
+                    </div>
+                    <div class=" input-group mb-5">
+                        <span class="input-group-text">Narration:</span>
+                        <input class="form-control" type="text" id="payNarration" required>
+                    </div>
+                
+                    <!-- Table for item details -->
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Amount(Ksh)</th>
+                                <th scope="col"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="paymentDetails">
+                            <tr>
+                                <td scope="col">
+                                    <input class="form-control" type="text" id="amountPaid" required>
+                                </td>
+                                <td scope="col"></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <!-- End of table for invoice item details -->
+                    <div class="row justify-content-center text-end pt-5 d-grid">
+                        <button type="button" class="btn btn-success" id="paymentSaveBtn">Confirm Disbursement
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

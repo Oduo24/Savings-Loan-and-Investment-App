@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+
+<div class="authincation h-100">
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100 align-items-center">
+            <div class="col-md-12">
+                <div class="authincation-content">
+                    <div class="row no-gutters">
+                        <div class="col-xl-12">
+                            <div class="auth-form">
+                                <h4 class="text-center mb-4">New Payment</h4>
+                                <form method="POST" action="" id="">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" id="csrf_token">
+                                    <div class=" input-group mb-3">
+                                        <input type="text" class="form-control" placeholder="Voucher No.(SystemGen)" id="payment_no" disabled>
+                                        <span class="input-group-text">Voucher Date</span>
+                                        <input class="form-control" type="date" id="supplierInvDate" required>
+                                    </div>
+                                    <div class="input-group mb-3">
+                                        <input class="form-control" list="ledgerList" id="toAccount" placeholder="Ledger" required>
+                                        <datalist id="ledgerList">
+                                            {% for account in accounts %}
+                                                <option value="{{ account.account_name }}">
+                                            {% endfor %}
+                                        </datalist>
+                                        <span class="input-group-text">Party Account(cr)</span>
+                                        <input class="form-control" list="accountList" id="fromAccount" placeholder="Account" required>
+                                        <datalist id="accountList">
+                                            {% for paying_account in paying_accounts %}
+                                                <option value="{{ paying_account.account_name }}">
+                                            {% endfor %}
+                                        </datalist>
+                                    </div>
+                                    <div class=" input-group mb-5">
+                                        <span class="input-group-text">Narration:</span>
+                                        <input class="form-control" type="text" id="payNarration" required>
+                                    </div>
+                                    <div class=" input-group mb-4">
+                                        <button class="btn btn-outline-success" type="button" id="getOutstandingBalance">Load</button>
+                                    </div>
+                                
+                                    <!-- Table for item details -->
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Last Payment</th>
+                                                <th scope="col">Balance</th>
+                                                <th scope="col">Amount(Ksh)</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="paymentDetails">
+                                            <tr>
+                                                <td scope="col">
+                                                    <input class="form-control" type="text" id="lastPaymentDate" disabled>
+                                                </td>
+                                                <td scope="col">
+                                                    <input class="form-control" type="text" id="currentBalance" disabled>
+                                                </td>
+                                                <td scope="col">
+                                                    <input class="form-control" type="text" id="amountPaid" required>
+                                                </td>
+                                                <td scope="col"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- End of table for invoice item details -->
+                                    <div class="row justify-content-center text-end pt-5 d-grid">
+                                        <button type="button" class="btn btn-success" id="paymentSaveBtn">Save</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

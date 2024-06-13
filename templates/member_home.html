@@ -1,0 +1,111 @@
+{% extends 'member_base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+<!-- row -->
+<div class="row justify-content-center">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Total Savings</div>
+                    <div class="stat-digit">{{ total_savings }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-primary w-75" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Fines</div>
+                    <div class="stat-digit">{{ total_fines }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-warning w-50" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Outstanding Loan</div>
+                    <div class="stat-digit">{{ outstanding_loan }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-danger w-65" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+        <!-- /# card -->
+    </div>
+    <!-- /# column -->
+</div>
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Savings Overview</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-xl-12 col-lg-8">
+                        <div id="bar-chart">
+                            <canvas id="myChart" width="300" height="125"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Current Month's Contributions</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Cont.</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ current_monthly_cont_status.contribution_no }}</td>
+                                <td><span>{{ current_monthly_cont_status.amount }}</span></td>
+                                <td>
+                                    <span class="{{ 'badge badge-success' if current_monthly_cont_status.is_paid == True else 'badge badge-warning' }}">
+                                        {% if current_monthly_cont_status.is_paid == True %}
+                                            Paid
+                                        {% else %}
+                                            Pending
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends 'member_base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>Hi, {{ current_username }}!</h4>
+            <p>View payment history</p>
+        </div>
+    </div>
+</div>
+<!-- row -->
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Previous payments</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="example" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Doc.</th>
+                                <th>Amount</th>
+                                <th>Remarks</th>
+                                <th>Type</th>
+                                <th>Paid To</th>
+                            </tr>
+                        </thead>
+                        <tbody>   
+                            {% for payment in payments %}
+                            <tr>
+                                <td>{{ payment.receipt_date }}</td>
+                                <td>{{ payment.receipt_no }}</td>
+                                <td>{{ payment.amount }}</td>
+                                <td>{{ payment.remark }}</td>
+                                <td>{{ payment.receipt_for }}</td>
+                                <td>{{ payment.dr_account_id }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Date</th>
+                                <th>Doc.</th>
+                                <th>Amount</th>
+                                <th>Remarks</th>
+                                <th>Type</th>
+                                <th>Paid To</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

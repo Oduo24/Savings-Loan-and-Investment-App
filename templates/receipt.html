@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+
+<div class="authincation h-100">
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100 align-items-center">
+            <div class="col-md-12">
+                <div class="authincation-content">
+                    <div class="row no-gutters">
+                        <div class="col-xl-12">
+                            <div class="auth-form">
+                                <h4 class="text-center mb-4">New Receipt</h4>
+                                <form method="" action="" id="add_new_receipt">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" id="csrf_token">
+                                    <div class="input-group mb-3">
+                                        <input class="form-control" list="paidToAccounts" id="paid_to_account" placeholder="Party Acc. (Dr)" required>
+                                        <datalist id="paidToAccounts">
+                                            {% for account in to_accounts %}
+                                                  <option value="{{ account.account_name }}">
+                                            {% endfor %}
+                                        </datalist>
+                                            <span class="input-group-text">Date</span>
+                                            <input class="form-control" type="date" id="receiptDate" required>
+                                    </div>
+                                    <div class=" input-group mb-3">
+                                        <input class="form-control" id="receipt_no" placeholder="Receipt No(Sys Gen)" disabled>
+                                        <span class="input-group-text">For</span>
+                                        <input class="form-control" list="receipt_types" id="receipt_type" required>
+                                        <datalist id="receipt_types">
+                                            {% for type in receipt_types %}
+                                                  <option value="{{ type.name }}">
+                                            {% endfor %}
+                                        </datalist>
+                                    </div>
+                                    <div class="input-group mb-3 d-none" id="active_loans_input_group">
+                                        <input class="form-control" id="loans_not_cleared" list="active_loans" placeholder="Pending Loans">
+                                        <datalist id="active_loans" class="active_loans_datalist">
+
+                                        </datalist>
+                                    </div>
+
+ 
+                                    <!-- Table for receipt details -->
+                                    <table class="table">
+                                        <thead>
+                                            <tr>
+                                                <th scope="col">Ledger Name</th>
+                                                <th scope="col">Amount(Ksh)</th>
+                                                <th scope="col">Remarks</th>
+                                                <th scope="col"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="receiptDetails">
+                                          <tr>
+                                            <td><input class="form-control from_account" list="fromAccounts"></td>
+                                            <datalist id="fromAccounts">
+                                                {% for account in from_accounts %}
+                                                    <option value="{{ account.account_name }}">
+                                                {% endfor %}
+                                            </datalist>
+                                            <td><input type="text" class="form-control receipt_amount"></td>
+                                            <td><input type="text" class="form-control remarks"></td>
+                                            <td><h2 class="btn btn-danger remove_receipt">-</h2></td>
+                                          </tr>
+                                        </tbody>
+                                    </table>
+                                    <!-- End of table for receipt details -->
+                                              
+                                       <div class="" id="">
+                                           <button type="button" class="btn btn-success float-start" id="add_item_field" disabled>+</button>
+                                        </div>
+                            
+                                       <div class="row justify-content-center text-end pt-5 d-grid">
+                                            <button type="button" class="btn btn-lg btn-success" id="receiptSaveBtn">Save</button>
+                                        </div>
+                                      </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

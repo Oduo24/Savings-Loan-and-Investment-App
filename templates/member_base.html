@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Tenum</title>
+    <!-- Favicon icon -->
+    <link rel="icon" type="image/png" sizes="16x16" href="static/images/favicon.png">
+    <link rel="stylesheet" href="static/vendor/owl-carousel/css/owl.carousel.min.css">
+    <link rel="stylesheet" href="static/vendor/owl-carousel/css/owl.theme.default.min.css">
+    <link href="static/vendor/sweetalert2/dist/sweetalert2.min.css" rel="stylesheet">
+    <link href="static/vendor/jqvmap/css/jqvmap.min.css" rel="stylesheet">
+    <link href="static/css/style.css" rel="stylesheet">
+    <!-- Datatable -->
+    <link href="static/vendor/datatables/css/jquery.dataTables.min.css" rel="stylesheet">
+
+    
+
+</head>
+<body>
+
+    <!--*******************
+        Preloader start
+    ********************-->
+    <div id="preloader">
+        <div class="sk-three-bounce">
+            <div class="sk-child sk-bounce1"></div>
+            <div class="sk-child sk-bounce2"></div>
+            <div class="sk-child sk-bounce3"></div>
+        </div>
+    </div>
+    <!--*******************
+        Preloader end
+    ********************-->
+
+
+    <!--**********************************
+        Main wrapper start
+    ***********************************-->
+    <div id="main-wrapper">
+
+        <!--**********************************
+            Nav header start
+        ***********************************-->
+        <div class="nav-header">
+            <a href="{{ url_for('member_index') }}" class="brand-logo">
+                <p class="logo-abbr">TE</p>
+            </a>
+
+            <div class="nav-control">
+                <div class="hamburger">
+                    <span class="line"></span><span class="line"></span><span class="line"></span>
+                </div>
+            </div>
+        </div>
+        <!--**********************************
+            Nav header end
+        ***********************************-->
+
+        <!--**********************************
+            Header start
+        ***********************************-->
+        <div class="header">
+            <div class="header-content">
+                <nav class="navbar navbar-expand">
+                    <!-- <div class="collapse navbar-collapse justify-content-between">
+                        <div class="header-left">
+                            <div class="search_bar dropdown">
+                                <span class="search_icon p-3 c-pointer" data-toggle="dropdown">
+                                    <i class="mdi mdi-magnify"></i>
+                                </span>
+                                <div class="dropdown-menu p-0 m-0">
+                                    <form>
+                                        <input class="form-control" type="search" placeholder="Search" aria-label="Search">
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+                </nav>
+            </div>
+        </div>
+        <!--**********************************
+            Header end ti-comment-alt
+        ***********************************-->
+
+        <!--**********************************
+            Sidebar start
+        ***********************************-->
+        <div class="quixnav">
+            <div class="quixnav-scroll">
+                <ul class="metismenu" id="menu">
+                    <li class="nav-label first"><strong>MAIN MENU</strong></li>
+
+                    <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
+                        class="icon icon-layout-25"></i><span class="nav-text">Loans</span></a>
+                        <ul aria-expanded="false">
+                            <li><a href="{{ url_for('request_loan') }}" id="">Request Loan</a></li>
+                            <li><a href="{{ url_for('approve_loan') }}">Approve Loan</a></li>
+                            <li><a href="{{ url_for('my_loans') }}">My Loans</a></li>
+                        </ul>
+                    </li>
+
+                    <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
+                    class="icon icon-app-store"></i><span class="nav-text">Transactions</span></a>
+                        <ul aria-expanded="false">
+                            <li><a href="{{ url_for('get_member_payments') }}">Payments</a></li>
+                            <li><a href="{{ url_for('my_fines') }}">Fines</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="nav-label">Account</li>
+                    <li><a class="has-arrow" href="javascript:void()" aria-expanded="false"><i
+                                class="icon icon-single-copy-06"></i><span class="nav-text">Actions</span></a>
+                        <ul aria-expanded="false">
+                            <li><a href="{{ url_for('logout') }}" id="logout">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!--**********************************
+            Content body start
+        ***********************************-->
+        <div class="content-body">
+            <div class="container-fluid">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+        <!--**********************************
+            Content body end
+        ***********************************-->
+
+
+
+        
+        <!--**********************************
+            Footer start
+        ***********************************-->
+        <div class="footer">
+            <div class="copyright">
+                <p>Copyright © Designed &amp; Developed by <a href="#" target="_blank">Tenum</a> 2024</p>
+            </div>
+        </div>
+        <!--**********************************
+            Footer end
+        ***********************************-->
+
+    </div>
+    <!--**********************************
+        Main wrapper end
+    ***********************************-->
+
+    <!--**********************************
+        Scripts
+    ***********************************-->
+    <!-- Required vendors -->
+    <script src="static/vendor/global/global.min.js"></script>
+    <script src="static/js/quixnav-init.js"></script>
+    <script src="static/js/custom.min.js"></script>
+    <script src="static/js/my_custom.js"></script>
+    <script src="static/vendor/chart.js/Chart.bundle.min.js"></script>
+    <!-- Chartjs graphs -->
+    <script src="static/js/graphs.js"></script>
+    <script src="static/js/member_dynamic.js"></script>
+
+    <!-- Vectormap -->
+    <script src="static/vendor/raphael/raphael.min.js"></script>
+    <script src="static/vendor/morris/morris.min.js"></script>
+
+
+    <script src="static/vendor/circle-progress/circle-progress.min.js"></script>
+    <script src="static/vendor/chart.js/Chart.bundle.min.js"></script>
+
+    <script src="static/vendor/gaugeJS/dist/gauge.min.js"></script>
+
+    <!--  flot-chart js -->
+    <script src="static/vendor/flot/jquery.flot.js"></script>
+    <script src="static/vendor/flot/jquery.flot.resize.js"></script>
+
+    <!-- Owl Carousel -->
+    <script src="static/vendor/owl-carousel/js/owl.carousel.min.js"></script>
+
+    <!-- Counter Up -->
+    <script src="static/vendor/jqvmap/js/jquery.vmap.min.js"></script>
+    <script src="static/vendor/jqvmap/js/jquery.vmap.usa.js"></script>
+    <script src="static/vendor/jquery.counterup/jquery.counterup.min.js"></script>
+
+
+    <script src="static/js/dashboard/dashboard-1.js"></script>
+
+    <!-- Datatable -->
+    <script src="static/vendor/datatables/js/jquery.dataTables.min.js"></script>
+    <script src="static/js/plugins-init/datatables.init.js"></script>
+
+    <!-- Loan request -->
+    <script src="static/js/dashboard/dashboard-2.js"></script>
+
+    <!-- Sweet alerts -->
+    <script src="static/vendor/sweetalert2/dist/sweetalert2.min.js"></script>
+    <script src="static/js/plugins-init/sweetalert.init.js"></script>
+
+    </body>
+</html>
+        <!--**********************************
+            Sidebar end
+        ***********************************-->

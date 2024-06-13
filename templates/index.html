@@ -1,0 +1,128 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+<!-- row -->
+<div class="row">
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Total Expenses </div>
+                    <div class="stat-digit">{{ total_expenses }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-success w-85" role="progressbar" aria-valuenow="85" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Total Savings</div>
+                    <div class="stat-digit">{{ total_members_equity }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-primary w-75" role="progressbar" aria-valuenow="78" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Total Income</div>
+                    <div class="stat-digit">{{ total_income }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-warning w-50" role="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-two card-body">
+                <div class="stat-content">
+                    <div class="stat-text">Loans and Advances</div>
+                    <div class="stat-digit">{{ total_loans_issued }}</div>
+                </div>
+                <div class="progress">
+                    <div class="progress-bar progress-bar-danger w-65" role="progressbar" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+        <!-- /# card -->
+    </div>
+    <!-- /# column -->
+</div>
+<div class="row">
+    <div class="col">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Savings Overview</h4>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-xl-12 col-lg-8">
+                        <div id="bar-chart">
+                            <canvas id="myChart" width="300" height="125"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Current Month's Contributions</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Member</th>
+                                <th>Contribution No.</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>    
+                            {% for monthly_contribution in monthly_cont %}
+                            <tr>
+                                <td>{{ monthly_contribution.from_user }}</td>
+                                <td>{{ monthly_contribution.contribution_no }}</td>
+                                <td><span>{{ monthly_contribution.amount }}</span></td>
+                                <td>
+                                    <span class="{{ 'badge badge-success' if monthly_contribution.is_paid == 1 else 'badge badge-warning' }}">
+                                        {% if monthly_contribution.is_paid == 1 %}
+                                            Paid
+                                        {% else %}
+                                            Pending
+                                        {% endif %}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

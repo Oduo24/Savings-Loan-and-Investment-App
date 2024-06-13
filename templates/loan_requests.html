@@ -1,0 +1,97 @@
+{% extends 'member_base.html' %}
+
+{% block content %}
+
+<!--**********************************
+    Content body start
+***********************************-->
+
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>Hi, {{ current_username }}!</h4>
+        </div>
+    </div>
+</div>
+<!-- row -->
+
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="card-title">Loan Requests</h4>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="example" class="display" style="min-width: 845px">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Member</th>
+                                <th>Doc.</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            {% for loan_request in loan_requests %}
+                                <tr>
+                                    <td>{{ loan_request.created_at.strftime('%d/%m/%Y') }}</td>
+                                    <td>{{ loan_request.request_from_user }}</td>
+                                    <td>{{ loan_request.loan_no }}</td>
+                                    <td>{{ loan_request.request_amount }}</td>
+                                    <td>{{ loan_request.approval_status }}</td>
+                                    <td>
+         
+                                        {% if current_username == loan_request.request_from_user %}
+                                            {% if loan_request.approval_count < 3 %}
+                                                <button class="btn btn-success btn-sm approveBtn" type="button" loan_id="{{ loan_request.id }}" data-bs-toggle="offcanvas" data-bs-target="#confirmLoanApproval" aria-controls="offcanvasWithBothOptions" btn_type="loanee_count" disabled>
+                                                    {{ loan_request.approval_count }}
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-success btn-sm approveBtn" type="button" loan_id="{{ loan_request.id }}" data-bs-toggle="offcanvas" data-bs-target="#confirmLoanApproval" aria-controls="offcanvasWithBothOptions" btn_type="loanee_approved" disabled>
+                                                    Approved
+                                                </button>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if loan_request.approval_count < 3 and loan_request.id not in user_approvals %}
+                                                <button class="btn btn-success btn-sm member_approve" type="button" loan_id="{{ loan_request.id }}" data-bs-toggle="offcanvas" data-bs-target="#confirmLoanApproval" aria-controls="offcanvasWithBothOptions" btn_type="member_approve">
+                                                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                                    Approve
+                                                </button>
+                                            {% else %}
+                                                <button class="btn btn-success btn-sm approveBtn" type="button" loan_id="{{ loan_request.id }}" data-bs-toggle="offcanvas" data-bs-target="#confirmLoanApproval" aria-controls="offcanvasWithBothOptions" btn_type="member_approved" disabled>
+                                                    Approved
+                                                </button>
+                                            {% endif %}
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th>Date</th>
+                                <th>Member</th>
+                                <th>Doc.</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!--**********************************
+    Content body end
+***********************************-->
+
+{% endblock %}

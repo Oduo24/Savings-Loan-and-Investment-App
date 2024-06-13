@@ -1,0 +1,110 @@
+{% extends 'member_base.html' %}
+
+{% block content %}
+<!--**********************************
+    Content body start
+***********************************-->
+<div class="row page-titles mx-0">
+    <div class="col-sm-6 p-md-0">
+        <div class="welcome-text">
+            <h4>Hi, {{ username }}!</h4>
+            <p class="mb-0">Request for a loan</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="text-success border-success">Ksh</i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">Loan Limit</div>
+                    <div class="stat-digit">{{ loan_limit }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-6 col-sm-6">
+        <div class="card">
+            <div class="stat-widget-one card-body">
+                <div class="stat-icon d-inline-block">
+                    <i class="text-success border-success">Ksh</i>
+                </div>
+                <div class="stat-content d-inline-block">
+                    <div class="stat-text">Account Balance</div>
+                    <div class="stat-digit">{{ account_balance }}</div>
+                </div>
+            </div>
+        </div>
+    </div>                            
+</div>
+
+
+<div class="authincation h-100">
+    <div class="container-fluid h-100">
+        <div class="row justify-content-center h-100 align-items-center">
+            <div class="col-md-12">
+                <div class="authincation-content">
+                    <div class="row no-gutters">
+                        <div class="col-xl-12">
+                            <div class="auth-form">
+                                <h4 class="text-center mb-4">Loan Form</h4>
+                                <form id="loanForm" method="POST" action="{{ url_for('request_loan') }}">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="form-group">
+                                        <label for="loanAmount">Loan Amount</label>
+                                        <input type="number" class="form-control" id="loanAmount" placeholder="Enter loan amount" min="1" name="loanAmount" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="loanCategory">Loan Category</label>
+                                        <select class="form-control" id="loanCategory" required>
+                                        <option value="0">Up to ksh 30,000 (2 months)</option>
+                                        <option value="1">Above ksh 30,000 (4 months)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="amountToRepay">Amount to Repay</label>
+                                        <input type="text" class="form-control" id="amountToRepay" readonly>
+                                    </div>
+                                    <p class="btn btn-primary" id="submitLoanRequest">Submit
+                                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loanRequestSpinner"></span>
+                                    </p>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- Submission Confirmation Modal -->
+<div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="modalLabel">Submission Confirmation</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          Your loan application has been submitted successfully!
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+<!--**********************************
+    Content body end
+***********************************-->
+{% endblock %}
+
+       
