@@ -1,4 +1,6 @@
 # Project Overview
+![admin_view](https://github.com/Oduo24/Savings-Loan-and-Investment-App/assets/82431848/4c3e7b3e-85e4-43f3-afbf-da526692557f)
+
 This project is a web-based savings, loan, and investment platform designed to help users manage their finances. Built using Flask, MySQL (SQLAlchemy), Bootstrap, and other JavaScript libraries, the platform offers a user-friendly interface for saving money, applying for loans, and making investments. It has two different user roles(admin and normal user). Users can deposit savings, request loans, and track their investment performance, all through a secure and intuitive web application. The platform also includes features for managing transactions, calculating interest, and providing financial reports.
 
 ## 1. Project Structure
@@ -36,3 +38,27 @@ pip install -r requirements.txt
 python3 app.py
 ```
 The application will be available at http://127.0.0.1:5000.
+
+## 3. Usage
+1. The admin can perform the following roles
+- Add new users.
+- Make receipts.
+- Disburse approved loans.
+- Surcharge a user account.
+- Generate reports like P&L trial balance and Balance Sheet.
+- Change account settings.
+
+![making-a-payment](https://github.com/Oduo24/Savings-Loan-and-Investment-App/assets/82431848/2655d4df-3dfc-4b4d-8001-b960f19efb31)
+
+2. A normal user can perform the following roles
+- View his account balance summaries like savings, outstanding loan balance and fines.
+  ![user-home-page](https://github.com/Oduo24/Savings-Loan-and-Investment-App/assets/82431848/0468e873-6d5b-42c4-99d1-569d70c752f0)
+
+- Request for a loan.
+  ![request-loan](https://github.com/Oduo24/Savings-Loan-and-Investment-App/assets/82431848/84184d57-7f8e-4d6e-88fe-bd3a891c363a)
+
+- Approve loan requests.
+  ![approve-loan](https://github.com/Oduo24/Savings-Loan-and-Investment-App/assets/82431848/f2f7c726-2d65-4a9e-8b05-0fd2aa90eede)
+
+- View their transaction history.
+- View loan history.
