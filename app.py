@@ -19,16 +19,13 @@ from jobs import create_monthly_contributions
 
 from models.base_model import BaseModel
 from models.main_models import *
-from db_storage import DBStorage
+from db_storage import DBStorage, Session
 
 from utility.number_formater import format_numbers_in_json
 
 # Instantiate a storage object and flush all classes that needs to be mapped to database tables
 storage = DBStorage()
-storage.reload()
-storage.save()
-storage.close()
-
+storage.initialize_storage()
 
 app = Flask(__name__)
 csrf = CSRFProtect(app)
@@ -66,37 +63,40 @@ def role_required(*roles):
 def handle_csrf_error(e):
     return render_template('page-login.html')
 
-
-
-# INITIALIZING JOBS FOR THE APP
-MYSQL_USER = os.environ.get('MYSQL_USER', 'gerald')
-MYSQL_PWD = os.environ.get('MYSQL_PWD', 'ruphinee')
-MYSQL_HOST = os.environ.get('MYSQL_HOST', 'localhost')
-MYSQL_DB = os.environ.get('MYSQL_DB', 'tenum_db')
-
 # Create a SQLAlchemy job store
-jobstore = {
-    'default': SQLAlchemyJobStore(url="mysql+mysqldb://{}:{}@{}/{}".format(MYSQL_USER, MYSQL_PWD, MYSQL_HOST, MYSQL_DB))
-}
+# jobstore = {
+#   'default': SQLAlchemyJobStore(url="mysql+mysqldb://{}:{}@{}/{}".format(MYSQL_USER, MYSQL_PWD, MYSQL_HOST, MYSQL_DB))}
 # executor = {
 #     'default': ThreadPoolExecutor(20),
 #     'processpool': ProcessPoolExecutor(5)
 # }
 
 # Create a monthly_contribution_scheduler with the SQLAlchemy job store
-monthly_contribution_scheduler = BackgroundScheduler(jobstores=jobstore)
+# monthly_contribution_scheduler = BackgroundScheduler(jobstores=jobstore)
 
 # Add the job to the monthly_contribution_scheduler with the cron trigger
 # monthly_contribution_scheduler.add_job(create_monthly_contributions, trigger='cron', day='1', month='*')
-monthly_contribution_scheduler.add_job(create_monthly_contributions, trigger='cron', hour=9, minute=10, day='1', month='*')
+# monthly_contribution_scheduler.add_job(create_monthly_contributions, trigger='cron', hour=9, minute=10, day='1', month='*')
 
 # Start the monthly_contribution_scheduler
-monthly_contribution_scheduler.start()
+# monthly_contribution_scheduler.start()
 
 # monthly_contribution_scheduler.shutdown()
 
 # logging.basicConfig()
 # logging.getLogger('apscheduler').setLevel(logging.DEBUG)
+
+@app.before_request
+def create_session():
+    # This ensures that each request gets its own session
+    request.db_session = Session()
+    request.storage = DBStorage(request.db_session)
+
+@app.teardown_request
+def teardown_request(exception=None):
+    if exception:
+        request.db_session.rollback()
+    Session.remove()
 
 
 @app.route('/', methods=['GET'], strict_slashes=False)
@@ -108,7 +108,9 @@ def landing():
 @role_required('admin')
 def admin_index():
     try:
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+
         expense_accounts = storage.get_accounts_by_group_name('Expenses')
         income_accounts = storage.get_accounts_by_group_name('Income')
         members_equity_accounts = storage.get_accounts_by_group_name('Members equity')
@@ -117,7 +119,6 @@ def admin_index():
 
         for cont in monthly_cont:
             cont.from_user = storage.get_object_by_id(User, cont.from_user).user_name
-
 
         total_expenses = sum(account.account_balance for account in expense_accounts)
         total_income = sum(account.account_balance for account in income_accounts)
@@ -137,15 +138,16 @@ def admin_index():
     except Exception as e:
         traceback.print_exc()
         return jsonify("Error: Backend error")
-    finally:
-        storage.close()
+
 
 @app.route('/m_index', methods=['GET'], strict_slashes=False)
 @jwt_required()
 @role_required('member')
 def member_index():
     try:
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+
         current_username = get_jwt_identity()
         user = storage.get_user(current_username)
 
@@ -187,9 +189,6 @@ def member_index():
     except Exception as e:
         traceback.print_exc()
         return jsonify("Error: Backend error")
-    finally:
-        storage.close()
-    
 
 
 @app.route('/admin_home', methods=['GET'], strict_slashes=False)
@@ -197,7 +196,9 @@ def member_index():
 @role_required('admin')
 def admin_home():
     try:
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+
         # Get the passed parameters
         username = request.args.get('username')
 
@@ -207,13 +208,14 @@ def admin_home():
         loan_accounts = storage.get_accounts_by_group_name('Loans and advances(Asset)')
         monthly_cont = storage.get_all_objects(MonthlyContribution)
 
-        for cont in monthly_cont:
-            cont.from_user = storage.get_object_by_id(User, cont.from_user).user_name
+        if monthly_cont:
+            for cont in monthly_cont:
+                cont.from_user = storage.get_object_by_id(User, cont.from_user).user_name
 
         total_expenses = sum(account.account_balance for account in expense_accounts)
         total_income = sum(account.account_balance for account in income_accounts)
-        total_members_equity = sum(account.account_balance for account in members_equity_accounts)
-        total_loans_issued = sum(account.account_balance for account in loan_accounts)
+        total_members_equity = sum(account.account_balance for account in members_equity_accounts) if members_equity_accounts else 0
+        total_loans_issued = sum(account.account_balance for account in loan_accounts) if loan_accounts else 0
 
         paramlist = [total_expenses, total_income, total_members_equity, total_loans_issued]
         formated_paramlist = format_numbers_in_json(paramlist)
@@ -229,15 +231,16 @@ def admin_home():
     except Exception as e:
         traceback.print_exc()
         return jsonify("Error: Backend error")
-    finally:
-        storage.reload()
+
 
 @app.route('/member_home', methods=['GET'], strict_slashes=False)
 @jwt_required()
 @role_required('member')
 def member_home():
     try:
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+
         # Get the passed parameters
         username = request.args.get('username')
 
@@ -283,8 +286,6 @@ def member_home():
     except Exception as e:
         traceback.print_exc()
         return jsonify("Error: Backend error")
-    finally:
-        storage.close()
 
 
 @app.route('/login', methods=['POST', 'GET'], strict_slashes=False)
@@ -294,7 +295,9 @@ def login():
         password = request.form.get('password', None)
 
         try:
-            storage.reload()
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             user = storage.get_user(username)
 
             if not user or not check_password_hash(user.password, password):
@@ -313,8 +316,6 @@ def login():
                 return response
         except Exception as e:
             traceback.print_exc()
-        finally:
-            storage.close()
     else:
         return render_template('page-login.html')
 
@@ -325,7 +326,9 @@ def login():
 @role_required('admin')
 def register_user():
     if request.method == 'POST':
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+
         first_name = request.form.get('first_name')
         last_name = request.form.get('last_name')
         user_name = request.form.get('user_name')
@@ -338,8 +341,8 @@ def register_user():
             return jsonify({"error": "Missing required fields"}), 400
 
         # Check if user_name already exists
-            if storage.get_user(username):
-                return jsonify({"error": "Username already exists"}), 400
+        if storage.get_user(user_name):
+            return jsonify({"error": "Username already exists"}), 400
 
         password_hashed = generate_password_hash(password)
 
@@ -384,8 +387,6 @@ def register_user():
             storage.rollback()
             traceback.print_exc()
             return jsonify({"error": str(e)}), 500
-        finally:
-            storage.close()
     else:
         return render_template('page-register.html')
 
@@ -417,7 +418,9 @@ def new_account():
     claims = get_jwt()
     if request.method == 'POST':
         try:
-            storage.reload()
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             form_details = request.get_json()
             account_name = form_details['account_name']
             group_name = form_details['account_group']
@@ -441,20 +444,17 @@ def new_account():
             storage.rollback()
             traceback.print_exc()
             return jsonify({"error": "Unknown Exception occured"})
-        finally:
-            storage.close()
-    # else:
-    #     return render_template('add-account.html')
 
         
 @app.route('/new_receipt', methods=['POST', 'GET'], strict_slashes=False)
 @jwt_required()
 @role_required('admin')
 def receive_payment():
+    # Access the DBStorage instance for this request
+    storage = request.storage
+
     if request.method == 'POST':
         try:
-            
-            storage.reload()
             receipt_details = request.get_json()
 
             # Dr account involved
@@ -468,10 +468,11 @@ def receive_payment():
                 # Cr account involved
                 from_account = storage.get_account_by_name(individual_receipt["from_account"])
 
-                # User
-                from_user = storage.get_user(from_account.account_name)
-                if not from_user:
-                    return jsonify({"error":  "Wrong LEDGER NAME selected"}), 500
+                if receipt_for.name != 'Registration Fee': # Check that correct ledger is selected for other payment types
+                    # User
+                    from_user = storage.get_user(from_account.account_name)
+                    if not from_user:
+                        return jsonify({"error":  "Wrong LEDGER NAME selected"}), 500
 
                 # Handling receipt date
                 date_format = "%Y-%m-%d"
@@ -542,6 +543,27 @@ def receive_payment():
                         amount=individual_receipt["receipt_amount"],
                     )
                     storage.new(saving_obj)
+
+                elif receipt_for.name == 'Registration Fee':
+                    # from_user to be temporarily the current admin
+                    from_user = storage.get_user(get_jwt_identity())
+                    # Registration account
+                    registration_income_account = storage.get_account_by_name("Registration")
+                    receiptObj = {
+                    "receipt_date": parsed_date,
+                    "receipt_no": receipt_no,
+                    "amount": individual_receipt["receipt_amount"],
+                    "remark": individual_receipt["remarks"],
+                    "from_user": from_user.id,
+                    "receipt_for": receipt_for.id,
+                    "dr_account_id": paid_to_account.id,
+                    "cr_account_id": registration_income_account.id
+                    }
+                    # Update registration_income_account_balance
+                    registration_income_account.account_balance -= int(individual_receipt["receipt_amount"])
+                    new_receipt = Receipt(**receiptObj)
+                    storage.new(new_receipt)
+
                 elif receipt_for.name == 'Loan Repayment':
                     loan_number = receipt_details["loan_number"]
                     # Credit member loan account
@@ -586,9 +608,6 @@ def receive_payment():
             storage.rollback()
             traceback.print_exc()
             return jsonify({"error": "Error saving receipt information"}), 500
-        finally:
-            storage.close()
-
     else:
         from_accounts = storage.get_all_accounts_excluding_loans_and_advances_accounts()
         to_accounts = storage.get_all_paying_accounts()
@@ -607,6 +626,9 @@ def receive_payment():
 def retrieve_active_loans():
     if request.method == 'POST':
         try:
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             # Retrieve all active loans
             active_loans = storage.get_all_active_loan_numbers()
             if active_loans:
@@ -615,16 +637,17 @@ def retrieve_active_loans():
         except Exception as e:
             traceback.print_exc()
             return jsonify({"error": "Retrieving pending loans"})
-        finally:
-            storage.close()
+
 
 @app.route('/pay', methods=['POST', 'GET'], strict_slashes=False)
 @jwt_required()
 @role_required('admin')
 def payment():
+    # Access the DBStorage instance for this request
+    storage = request.storage
+
     if request.method == 'POST':
         try:
-            storage.reload()
             payment_details = request.get_json()
             payment_no = storage.generate_document_number("PAY")
             # Handle the transaction.
@@ -658,7 +681,6 @@ def payment():
             return jsonify({"error": f"Could not create a new payment. \n {e}"}), 500
         finally:
             storage.save()
-            storage.close()
     else:
         accounts = storage.get_all_accounts_excluding_loans_and_advances_accounts()
         paying_accounts = storage.get_all_paying_accounts()
@@ -675,10 +697,12 @@ def last_payment_info():
     """Get the details of last payment made"""
     if request.method == 'POST':
         try:
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             toAccount_and_payingAccount = request.get_json()
 
             # Get last payment
-            storage.reload()
             last_payment = storage.get_last_payment(toAccount_and_payingAccount["toAccount"])
             balance = storage.get_account_by_name(toAccount_and_payingAccount["toAccount"]).account_balance
 
@@ -700,18 +724,16 @@ def last_payment_info():
 
         except Exception as e:
             return jsonify({"error": f"Could not retrieve last payment information {e}"})
-        finally:
-            storage.close()
-
 
 
 @app.route('/new_fine', methods=['POST', 'GET'], strict_slashes=False)
 @jwt_required()
 @role_required('admin')
 def fine():
+    # Access the DBStorage instance for this request
+    storage = request.storage
     if request.method == 'POST':
         try:
-            storage.reload()
             receipt_details = request.get_json()
 
             # Cr account involved
@@ -751,21 +773,21 @@ def fine():
             return jsonify({"error": "Error saving fine information"}), 500
         finally:
             storage.save()
-            storage.close()
 
     else:
         from_accounts = storage.get_all_objects(Account)
         return render_template('fine.html', from_accounts=from_accounts)
 
 
-
-@app.route('/member_payments', methods=['GET'], strict_slashes=False)
+@app.route('/member_payments', methods=['GET',], strict_slashes=False)
 @jwt_required()
 @role_required('member')
 def get_member_payments():
     if request.method == 'GET':
         try:
-            storage.reload()
+            print("Request received...")
+            # Access the DBStorage instance for this request
+            storage = request.storage
             if request.method == 'GET':
                 current_username = get_jwt_identity()
                 user = storage.get_user(current_username)
@@ -776,15 +798,15 @@ def get_member_payments():
 
                     receipt.receipt_for = receipt_type
                     receipt.dr_account_id = account_name
+                print("Finished processing...")
 
                 return render_template('member_payments.html', 
-                                        current_username=current_username,
-                                        payments=user.receipts_from   # Payments are receipts on the backend admin view
-                                    )
+                    current_username=current_username,
+                    payments=user.receipts_from   # Payments are receipts on the backend admin view
+                )
         except Exception as e:
             traceback.print_exc()
-        finally:
-            storage.close()
+
 
 
 @app.route('/request_loan', methods=['GET', 'POST'], strict_slashes=False)
@@ -792,41 +814,48 @@ def get_member_payments():
 @role_required('member')
 def request_loan():
     try:
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+        
         current_username = get_jwt_identity()
         user = storage.get_user(current_username)
         user_account = storage.get_account_by_name(user.user_name)
         
-        # account_balance = user_account.account_balance
         
-        # Calculate total savings = random savings + monthly contributions, where is_paid is true
+        # Calculate total savings = random savings + monthly contributions -fines, where is_paid is true
         random_savings = sum(saving.amount for saving in user.random_savings)
         # Total monthly contributions
         total_monthly_contributions = sum(contribution.amount for contribution in user.monthly_contributions if contribution.is_paid == True)
-        total_savings = random_savings + total_monthly_contributions
+        # Calculate all fines
+        total_fines = sum(fine.amount for fine in user.fines)
+        total_savings = random_savings + total_monthly_contributions -total_fines
         # Total active loans(Principal Amount)
         total_outstanding_loan_balance = 0
         for loan in user.loan_requests:
+            print(loan.loan_status)
             if loan.loan_status == 'active':
-                total_outstanding_loan_balance += float(loan.outstanding_balance)
-
+                total_outstanding_loan_balance += float(loan.request_amount)
+        
         # Account balance is equal to total savings minus active loans(Principal Amount)
         account_balance = total_savings - total_outstanding_loan_balance
 
-        # Calculate loan limit(75% of member's equity) minus outstanding loans
+        # Calculate loan limit(75% of member's equity)
         member_equity = user_account.account_balance
-        loan_limit = 0.75 * abs(member_equity) - total_outstanding_loan_balance
-        loan_limit = 0 if loan_limit < 0 else loan_limit
+        retained_amount = 0.25 * abs(member_equity)
+        loan_limit = account_balance - retained_amount
 
         if request.method == 'POST':
             loan_data = request.get_json()
-            loan_amount = int(loan_data['loanAmount']) 
-            
+            loan_amount = int(loan_data['loanAmount'])
+
+            # return if loan amount is negative
+            if loan_amount <= 0: return jsonify(invalid="Invalid loan amount")
+
 
             # Early return if there is a pending request not yet approved
             for loan_request in user.loan_requests:
                 if loan_request.approval_status == "pending":
-                    return jsonify(invalid="You have a pending loan request which has not been approved..."), 200
+                    return jsonify({"invalid": "You have a pending loan request which has not been approved..."})
 
             # Early return if loan amount exceeds loan limit
             if loan_amount > loan_limit:
@@ -858,29 +887,13 @@ def request_loan():
                 user_id=user.id
             )
             storage.new(new_loan_approval_status)
-            
-
-            # # debiting and crediting appropriate accounts
-            # user_loan_account_balance = storage.get_account_by_name(user.user_name + "_L&A")
-            # loan_revenue_Account = storage.get_account_by_name("Loan Revenue")
-            # new_loan_sale = LoanSale(
-            #     loan_id=new_loan_request.id,
-            #     user_id=user.id,
-            #     amount=new_loan_request.repayment_amount,
-            #     dr_account_id=user_loan_account_balance.id
-            #     cr_account_id=loan_revenue_Account.id
-            # )
-            # storage.new(new_loan_sale)
-
-            # # Updating account balances
-            # user_loan_account_balance += float(new_loan_request.repayment_amount)
-            # loan_revenue_Account -= float(new_loan_request.repayment_amount)
 
             storage.save()
-            return redirect(url_for('approve_loan'))
+            return jsonify(success="Loan request submitted. Awaiting approval")
         else:
             paramlist = [account_balance, loan_limit]
             formated_paramlist = format_numbers_in_json(paramlist)
+
             return render_template('request_loan.html', 
                                     username=current_username,
                                     account_balance=formated_paramlist[0],
@@ -889,10 +902,7 @@ def request_loan():
     except Exception as e:
         storage.rollback()
         traceback.print_exc()
-        return jsonify({"error": "Could not create a loan request"})
-    finally:
-        # storage.save()
-        storage.close()
+        return jsonify(error="Could not create a loan request")
 
 
 @app.route('/loan_approval', methods=['GET', 'POST'], strict_slashes=False)
@@ -903,7 +913,9 @@ def approve_loan():
     role = claims.get('role', None)
     current_username = get_jwt_identity()
     try:
-        storage.reload()
+        # Access the DBStorage instance for this request
+        storage = request.storage
+
         user = storage.get_user(current_username)
         loan_requests = storage.get_unapproved_loans()
         
@@ -911,7 +923,6 @@ def approve_loan():
             loan_id = None
             if request.method == 'POST':
                 try:
-                    storage.reload()
                     loan_id = request.get_json()
                     user_approval = storage.get_user_approval_status(user.id, loan_id)
                     user_approval_status = user_approval.approval_status if user_approval else None
@@ -956,7 +967,6 @@ def approve_loan():
         else:
             if request.method == 'POST':
                 try:
-                    storage.reload()
                     loan_details = request.get_json()
                     repayment_amount = float(loan_details["loan_amount"].split()[1]) * 1.1
                     # Change status of loan to disbursed
@@ -1015,8 +1025,6 @@ def approve_loan():
         storage.rollback()
         traceback.print_exc()
         return jsonify({"error": "backend error"})
-    finally:
-        storage.close()
 
 
 @app.route('/my_loans', methods=['GET'], strict_slashes=False)
@@ -1025,7 +1033,9 @@ def approve_loan():
 def my_loans():
     if request.method == 'GET':
         try:
-            storage.reload()
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             current_username = get_jwt_identity()
             user = storage.get_user(current_username)
 
@@ -1038,8 +1048,6 @@ def my_loans():
                                 )
         except Exception as e:
             traceback.print_exc()
-        finally:
-            storage.close()
 
 
 @app.route('/fines', methods=['GET'], strict_slashes=False)
@@ -1048,7 +1056,9 @@ def my_loans():
 def my_fines():
     if request.method == 'GET':
         try:
-            storage.reload()
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             current_username = get_jwt_identity()
             user = storage.get_user(current_username)
 
@@ -1058,8 +1068,6 @@ def my_fines():
                                 )
         except Exception as e:
             traceback.print_exc()
-        finally:
-            storage.close()
 
 
 @app.route('/settings', methods=['GET', 'POST'], strict_slashes=False)
@@ -1072,8 +1080,10 @@ def settings():
     if request.method == 'POST':
         setting_data = request.get_json()
 
-        storage.reload()
         try:
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             if role == 'admin':   
                 for setting_name, new_value in setting_data.items():
                     setting = storage.get_setting_by_name(setting_name)
@@ -1087,8 +1097,6 @@ def settings():
             storage.rollback()
             traceback.print_exc()
             return jsonify({"error": "Error updating settings"})
-        finally:
-            storage.close()
                
 
 @app.route('/member_savings_data', methods=['GET', 'POST'], strict_slashes=False)
@@ -1099,8 +1107,10 @@ def member_savings_data():
     role = claims.get('role', None)
     current_username = get_jwt_identity()
     if request.method == 'POST':
-        storage.reload()
         try:
+            # Access the DBStorage instance for this request
+            storage = request.storage
+            
             if role == 'member':   
                 user = storage.get_user(current_username)
                 # Initialize dictionaries to store amounts and months
@@ -1162,9 +1172,6 @@ def member_savings_data():
             storage.rollback()
             traceback.print_exc()
             return jsonify({"error": "Error Retrieving savings history"})
-        finally:
-            storage.close()
-
     else:
         return redirect(url_for('login'))
 
@@ -1207,7 +1214,9 @@ def unauthorized_callback(reason):
 def create_trial_balance():
     if request.method == 'POST':
         try:
-            storage.reload()
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             period = request.get_json()
             # Handling receipt date
             date_format = "%Y-%m-%d"
@@ -1268,9 +1277,6 @@ def create_trial_balance():
             traceback.print_exc()
             return jsonify({"error": "Error generating trial balance"})
 
-        finally:
-            storage.close()
-
 
 @app.route("/income_statement", methods=["POST"], strict_slashes=False)
 @jwt_required()
@@ -1278,7 +1284,9 @@ def create_trial_balance():
 def create_income_statement():
     if request.method == 'POST':
         try:
-            storage.reload()
+            # Access the DBStorage instance for this request
+            storage = request.storage
+
             period = request.get_json()
             # Handling receipt date
             date_format = "%Y-%m-%d"
@@ -1347,8 +1355,6 @@ def create_income_statement():
         except Exception as e:
             traceback.print_exc()
             return jsonify({"error": "Error generating P&L"})
-        finally:
-            storage.close()
 
 
 @app.route("/balance_sheet", methods=["POST"], strict_slashes=False)
@@ -1357,6 +1363,8 @@ def create_income_statement():
 def create_balance_sheet():
     if request.method == 'POST':
         try:
+            # Access the DBStorage instance for this request
+            storage = request.storage
             pass
             # Determine income/Close temporary accounts/Prepare income summary/Prepare P&L
             # expense_and_revenue_accounts = create_income_statement()
@@ -1368,10 +1376,6 @@ def create_balance_sheet():
         except Exception as e:
             traceback.print_exc()
             return jsonify({"error": "Error generating P&L"})
-        finally:
-            storage.close()
-
-
 
 
 if __name__ == "__main__":
